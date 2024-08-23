@@ -33,4 +33,6 @@ void nvinferDelete(NvinferStruct* ptr);
 
 void preProcess(cv::Mat* img, int length, float* factor, std::vector<float>& data);
 
+void warmUp(NvinferStruct* ptr, std::vector<float>& inputs, float* outputs);
+
 cv::Mat drawResult(cv::Mat& img, std::vector<DetectionResult>& results);

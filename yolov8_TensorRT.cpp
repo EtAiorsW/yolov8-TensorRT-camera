@@ -195,6 +195,14 @@ cv::Mat drawResult(cv::Mat& img, std::vector<DetectionResult>& results)
 	return img;
 }
 
+void warmUp(NvinferStruct* p, std::vector<float>& inputs, float* outputs)
+{
+	copyHostToDeviceByIndex(p, 0, inputs.data());
+	nvinferInference(p);
+	copyDeviceToHostByIndex(p, 1, outputs);
+}
+
+
 int main()
 {
 	const char* onnxFile = "/home/wanggq/ubuntu/DL/TensorRT/yolov8/yolov8n.onnx";
@@ -208,7 +216,7 @@ int main()
 	
 	// Initialize TensorRT
 	std::cout << "---------start initialize TensorRT---------" << std::endl;
-	NvinferStruct*p = new NvinferStruct();
+	NvinferStruct* p = new NvinferStruct();
 	NvinferStruct** ptr = &p;
 	nvinferInit(engineFile, ptr);
 
@@ -216,6 +224,9 @@ int main()
 	float factor = 0;
 	std::vector<float> inputs(shape * shape * 3);
 	float* outputs = new float[outputLength * (num_classes + 4)];
+
+	// Warm up
+	warmUp(p, inputs, outputs);
 
 	// Postprocess Init
 	PostProcess postprocess;
@@ -250,7 +261,7 @@ int main()
 		
 		cv::Mat resultImage = drawResult(frame, results);
         cv::imshow("frame", frame);
-        cv::waitKey(1);
+        cv::waitKey();
 	}
 	cv::destroyAllWindows();
 
